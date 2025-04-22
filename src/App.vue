@@ -90,14 +90,14 @@ const photos = [
   },
 ];
 const reasons = [
-  "Seu sorriso é o meu raio de sol em dias nublados ☀️",
-  "Sua força me inspira a ser melhor todos os dias 💪",
-  "Você transforma meus dias com seu jeito único de ser ✨",
-  "Seu carinho é o meu porto seguro em meio às tempestades 🌊",
-  "Sua inteligência me encanta e me faz admirar você ainda mais 🧠",
-  "Seu jeito de ser é perfeito, com todas as suas imperfeições 💫",
-  "Você me entende como ninguém, até nos meus silêncios 🤫",
-  "Seu amor é o combustível que me move todos os dias ⛽",
+  "Seu jeito único de ser me conquista todos os dias 💫",
+  "Você é minha parceira de todas as horas 💑",
+  "Seu abraço é o melhor lugar do mundo 🤗",
+  "Você me entende até quando eu não falo nada 🤫",
+  "Seu carinho é o meu lugar favorito 💕",
+  "Você é minha melhor amiga e meu maior amor ❤️",
+  "Seu jeito de ser me faz querer ser melhor 💪",
+  "Você é a pessoa mais especial que eu já conheci 💖",
   "Sua companhia é o meu lugar favorito no mundo 🌎",
   "Você é a pessoa que eu escolhi para amar todos os dias da minha vida 💍",
 ];
