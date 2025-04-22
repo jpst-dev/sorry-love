@@ -324,9 +324,10 @@ const startForgivenessAnimation = () => {
           tudo, amem-se sinceramente uns aos outros, porque o amor cobre uma
           multidão de pecados" (1 Pedro 4:8)... e eu confio que nosso amor é
           forte o bastante pra superar até isso.<br /><br />
-          Me perdoa, meu bem? Prometo ser mais atento, mais carinhoso, mais
-          presente. Você merece tudo de mais lindo, e eu quero ser quem te
-          entrega isso, dia após dia.<br /><br />
+          Você é a pessoa mais importante da minha vida, e quero te fazer feliz
+          todos os dias. Prometo ser mais atento, mais carinhoso, mais presente.
+          Você merece tudo de mais lindo, e eu quero ser quem te entrega isso,
+          dia após dia.<br /><br />
           Te amo com todo o meu coração ❤️<br />
           <span class="signature-container">
             <span class="signature-text">Com amor,</span>
