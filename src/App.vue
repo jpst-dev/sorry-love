@@ -444,7 +444,6 @@ const startForgivenessAnimation = async () => {
         Clique aqui se me perdoa ❤️
       </button>
       <p class="button-hint">
-        (Você receberá uma notificação quando ela clicar aqui)
         <span v-if="!canSendEmail" class="cooldown-text">
           (Aguarde alguns minutos antes de tentar novamente)
         </span>
