@@ -102,18 +102,23 @@ const reasons = [
   "Você é a pessoa que eu escolhi para amar todos os dias da minha vida 💍",
 ];
 
-const isPlaying = ref(true);
+const isPlaying = ref(false);
+const showAudioHint = ref(true);
 
 const toggleAudio = () => {
   isPlaying.value = !isPlaying.value;
-  const iframe = document.querySelector("iframe");
-  if (iframe) {
+  const audio = document.getElementById("background-music");
+  if (audio) {
     if (isPlaying.value) {
-      iframe.src = iframe.src.replace("autoplay=0", "autoplay=1");
+      audio.play().catch((error) => {
+        console.error("Erro ao reproduzir áudio:", error);
+        isPlaying.value = false;
+      });
     } else {
-      iframe.src = iframe.src.replace("autoplay=1", "autoplay=0");
+      audio.pause();
     }
   }
+  showAudioHint.value = false;
 };
 
 onMounted(() => {
@@ -174,6 +179,18 @@ onMounted(() => {
       });
     },
   });
+
+  // Inicializar o áudio
+  const audio = document.getElementById("background-music");
+  if (audio) {
+    audio.volume = 0.5; // Volume em 50%
+    audio.loop = true;
+
+    // Tentar reproduzir automaticamente (pode não funcionar em alguns navegadores)
+    audio.play().catch((error) => {
+      console.log("Autoplay não permitido, aguardando interação do usuário");
+    });
+  }
 });
 
 // Função para calcular o tempo juntos
@@ -273,20 +290,19 @@ const startForgivenessAnimation = () => {
   <div class="min-h-screen">
     <!-- Player de Áudio -->
     <div class="audio-player">
-      <iframe
-        width="0"
-        height="0"
-        src="https://www.youtube.com/embed/nzfU-jZ9te8?autoplay=1&loop=1&playlist=nzfU-jZ9te8"
-        frameborder="0"
-        allow="autoplay; encrypted-media"
-        allowfullscreen
-      ></iframe>
+      <audio id="background-music" preload="auto">
+        <source src="./assets/music.mp3" type="audio/mpeg" />
+        Seu navegador não suporta o elemento de áudio.
+      </audio>
       <button class="audio-control" @click="toggleAudio">
         <span class="audio-icon">{{ isPlaying ? "🔊" : "🔈" }}</span>
         <span class="audio-text">{{
           isPlaying ? "Música Ligada" : "Música Desligada"
         }}</span>
       </button>
+      <div v-if="showAudioHint" class="audio-hint">
+        Clique aqui para ativar a música de fundo 🎵
+      </div>
     </div>
 
     <!-- Header -->
@@ -783,6 +799,37 @@ body {
   bottom: 1rem;
   right: 1rem;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.audio-hint {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  color: var(--primary-700);
+  box-shadow: var(--shadow-md);
+  animation: pulse 2s infinite;
+  text-align: center;
+  max-width: 200px;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .audio-control {
@@ -912,6 +959,11 @@ body {
 
   .audio-text {
     display: none;
+  }
+
+  .audio-hint {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
   }
 }
 
