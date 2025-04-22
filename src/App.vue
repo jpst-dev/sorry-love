@@ -19,6 +19,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import gsap from "gsap";
+import emailjs from "@emailjs/browser";
 
 const showAnimation = ref(false);
 const startDate = new Date("2024-08-20"); // Substitua pela data real
@@ -104,6 +105,14 @@ const reasons = [
 
 const isPlaying = ref(false);
 const showAudioHint = ref(true);
+
+const lastEmailSent = ref(null);
+const emailCooldown = 5 * 60 * 1000; // 5 minutos em milissegundos
+
+const canSendEmail = computed(() => {
+  if (!lastEmailSent.value) return true;
+  return Date.now() - lastEmailSent.value > emailCooldown;
+});
 
 const toggleAudio = () => {
   isPlaying.value = !isPlaying.value;
@@ -212,8 +221,35 @@ const updateTimeTogether = () => {
   };
 };
 
-const startForgivenessAnimation = () => {
+const startForgivenessAnimation = async () => {
   showAnimation.value = true;
+
+  // Verificar se pode enviar email
+  if (!canSendEmail.value) {
+    console.log("Aguarde antes de enviar outro email");
+    return;
+  }
+
+  // Enviar email de notificação
+  try {
+    await emailjs.send(
+      import.meta.env.VITE_EMAILJS_SERVICE_ID,
+      import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+      {
+        to_name: "Seu Nome",
+        from_name: "Seu Amor",
+        message: "Ela te perdoou! ❤️",
+        reply_to: import.meta.env.VITE_YOUR_EMAIL,
+      },
+      import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+    );
+
+    // Atualizar o timestamp do último email enviado
+    lastEmailSent.value = Date.now();
+    console.log("Email enviado com sucesso!");
+  } catch (error) {
+    console.error("Erro ao enviar email:", error);
+  }
 
   // Animação do botão
   gsap.to(".forgive-button", {
@@ -323,33 +359,43 @@ const startForgivenessAnimation = () => {
     </section>
 
     <!-- Carta de Desculpas -->
-    <section class="section">
+    <section class="">
       <div class="card">
-        <p class="card-text">
-          Oi, meu amor...<br /><br />
-          Tô aqui com o coração apertado, escrevendo essas palavras porque sei
-          que te magoei — e isso me dói demais. Você é a pessoa mais especial da
-          minha vida, e só de imaginar que te deixei triste, meu peito
-          aperta.<br /><br />
-          Sei que nem sempre sou perfeito, mas meu amor por você é real, sincero
-          e cheio de vontade de melhorar. Eu quero te fazer sorrir todos os
-          dias, te dar segurança, carinho, e paz. Quero ser teu apoio, teu
-          abraço, tua casa.<br /><br />
-          A Bíblia diz que "o amor é paciente, o amor é bondoso" (1 Coríntios
-          13:4), e é isso que quero viver com você. Também diz que "acima de
-          tudo, amem-se sinceramente uns aos outros, porque o amor cobre uma
-          multidão de pecados" (1 Pedro 4:8)... e eu confio que nosso amor é
-          forte o bastante pra superar até isso.<br /><br />
-          Você é a pessoa mais importante da minha vida, e quero te fazer feliz
-          todos os dias. Prometo ser mais atento, mais carinhoso, mais presente.
-          Você merece tudo de mais lindo, e eu quero ser quem te entrega isso,
-          dia após dia.<br /><br />
-          Te amo com todo o meu coração ❤️<br />
-          <span class="signature-container">
-            <span class="signature-text">Com amor,</span>
-            <span class="signature-nickname">sua criaturinha</span>
-          </span>
-        </p>
+        <div class="card-content">
+          <div class="card-header">
+            <h2 class="card-title">Para você, meu amor</h2>
+            <div class="card-decoration">
+              <span class="decoration-heart">💝</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-text">
+              Oi, meu amor...<br /><br />
+              Tô aqui com o coração apertado, escrevendo essas palavras porque
+              sei que te magoei — e isso me dói demais. Você é a pessoa mais
+              especial da minha vida, e só de imaginar que te deixei triste, meu
+              peito aperta.<br /><br />
+              Sei que nem sempre sou perfeito, mas meu amor por você é real,
+              sincero e cheio de vontade de melhorar. Eu quero te fazer sorrir
+              todos os dias, te dar segurança, carinho, e paz. Quero ser teu
+              apoio, teu abraço, tua casa.<br /><br />
+              A Bíblia diz que "o amor é paciente, o amor é bondoso" (1
+              Coríntios 13:4), e é isso que quero viver com você. Também diz que
+              "acima de tudo, amem-se sinceramente uns aos outros, porque o amor
+              cobre uma multidão de pecados" (1 Pedro 4:8)... e eu confio que
+              nosso amor é forte o bastante pra superar até isso.<br /><br />
+              Você é a pessoa mais importante da minha vida, e quero te fazer
+              feliz todos os dias. Prometo ser mais atento, mais carinhoso, mais
+              presente. Você merece tudo de mais lindo, e eu quero ser quem te
+              entrega isso, dia após dia.<br /><br />
+              Te amo com todo o meu coração ❤️<br />
+              <span class="signature-container">
+                <span class="signature-text">Com amor,</span>
+                <span class="signature-nickname">sua criaturinha</span>
+              </span>
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -390,9 +436,19 @@ const startForgivenessAnimation = () => {
 
     <!-- Botão de Perdão -->
     <section class="button-section">
-      <button @click="startForgivenessAnimation" class="forgive-button">
+      <button
+        @click="startForgivenessAnimation"
+        class="forgive-button"
+        :disabled="!canSendEmail"
+      >
         Clique aqui se me perdoa ❤️
       </button>
+      <p class="button-hint">
+        (Você receberá uma notificação quando ela clicar aqui)
+        <span v-if="!canSendEmail" class="cooldown-text">
+          (Aguarde alguns minutos antes de tentar novamente)
+        </span>
+      </p>
     </section>
 
     <!-- Animação de Perdão -->
@@ -522,12 +578,60 @@ body {
 /* Card */
 .card {
   background: white;
-  padding: 1.5rem;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  color: var(--primary-900);
-  line-height: 1.8;
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
   border: 1px solid var(--primary-200);
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-500), var(--primary-700));
+}
+
+.card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--primary-100);
+}
+
+.card-title {
+  font-size: 1.8rem;
+  color: var(--primary-700);
+  font-weight: 600;
+  margin: 0;
+}
+
+.card-decoration {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.decoration-heart {
+  font-size: 1.5rem;
+  animation: pulse 2s infinite;
+}
+
+.card-body {
+  position: relative;
 }
 
 .card-text {
@@ -535,6 +639,52 @@ body {
   line-height: 1.8;
   color: var(--primary-900);
   margin: 0;
+  font-family: "Quicksand", sans-serif;
+  text-align: justify;
+}
+
+.signature-container {
+  display: block;
+  margin-top: 2rem;
+  text-align: right;
+}
+
+.signature-text {
+  display: block;
+  font-family: "Quicksand", sans-serif;
+  font-size: 1.2rem;
+  color: var(--primary-600);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.signature-nickname {
+  display: block;
+  font-family: "Quicksand", cursive;
+  font-size: 1.8rem;
+  color: var(--primary-700);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+}
+
+.signature-nickname:hover {
+  transform: translateX(0);
+  color: var(--primary-800);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Galeria */
@@ -552,7 +702,12 @@ body {
 
 .swiper {
   width: 100%;
+  height: auto;
   padding: 0.5rem 0;
+}
+
+.swiper-wrapper {
+  align-items: center;
 }
 
 .swiper-slide {
@@ -560,7 +715,7 @@ body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 0.25rem;
+  padding: 0.5rem;
 }
 
 .photo-card {
@@ -568,7 +723,6 @@ body {
   overflow: hidden;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  aspect-ratio: 3/4;
   width: 100%;
   max-width: 300px;
   margin: 0 auto;
@@ -579,7 +733,7 @@ body {
 .photo-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.3s ease;
 }
 
@@ -865,68 +1019,8 @@ body {
   font-weight: 500;
 }
 
-/* Estilos da Assinatura */
-.signature-container {
-  display: block;
-  margin-top: 1.5rem;
-  text-align: right;
-}
-
-.signature-text {
-  display: block;
-  font-family: "Quicksand", sans-serif;
-  font-size: 1.2rem;
-  color: var(--primary-600);
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.signature-nickname {
-  display: block;
-  font-family: "Quicksand", cursive;
-  font-size: 1.8rem;
-  color: var(--primary-700);
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transform: translateX(10px);
-  transition: all 0.3s ease;
-}
-
-.signature-nickname:hover {
-  transform: translateX(0);
-  color: var(--primary-800);
-}
-
 /* Media Queries */
 @media (max-width: 768px) {
-  .min-h-screen {
-    padding: 0.75rem;
-    gap: 1.5rem;
-  }
-
-  .header {
-    padding: 1.5rem 1rem;
-  }
-
-  .section {
-    padding: 1.25rem;
-  }
-
-  .card {
-    padding: 1.25rem;
-  }
-
-  .photo-card {
-    max-width: 250px;
-  }
-
-  .forgive-button {
-    padding: 0.75rem 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
   .min-h-screen {
     padding: 0.5rem;
     gap: 1rem;
@@ -934,63 +1028,212 @@ body {
 
   .header {
     padding: 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .header-title {
+    font-size: 1.5rem;
   }
 
   .section {
     padding: 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
   }
 
   .card {
     padding: 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .card-text {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .gallery-section {
+    padding: 0.5rem;
   }
 
   .photo-card {
-    max-width: 200px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+  }
+
+  .photo-image {
+    object-fit: contain;
+    max-height: 70vh;
+  }
+
+  .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem;
   }
 
   .forgive-button {
-    padding: 0.75rem 1rem;
+    padding: 1rem;
+    font-size: 1.1rem;
+    width: 100%;
+    max-width: none;
+    min-height: 3.5rem;
+    touch-action: manipulation;
   }
 
   .audio-control {
-    padding: 0.5rem;
-    border-radius: 50%;
+    padding: 1rem;
+    min-height: 3rem;
+    touch-action: manipulation;
   }
 
-  .audio-text {
-    display: none;
+  .reason-item {
+    padding: 1rem;
+    font-size: 1rem;
   }
 
-  .audio-hint {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
+  .reason-number {
+    font-size: 1.1rem;
+    min-width: 2rem;
+  }
+
+  .footer {
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .footer-text {
+    font-size: 1rem;
+  }
+
+  .counter-number {
+    font-size: 2.5rem;
+  }
+
+  .counter-label {
+    font-size: 0.9rem;
+  }
+
+  .swiper {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .photo-image {
+    will-change: transform;
+  }
+
+  button,
+  .swiper-slide,
+  .reason-item {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .forgive-button:active,
+  .audio-control:active {
+    transform: scale(0.98);
+  }
+
+  .reasons-list {
+    gap: 0.75rem;
+  }
+
+  .counter-container {
+    margin: 1rem 0;
+  }
+
+  .button-hint {
+    font-size: 0.75rem;
+    padding: 0 1rem;
+  }
+
+  .cooldown-text {
+    font-size: 0.65rem;
   }
 }
 
-@media (max-width: 320px) {
-  .photo-card {
-    max-width: 180px;
+@media (max-width: 480px) {
+  .min-h-screen {
+    padding: 0.25rem;
+  }
+
+  .header-title {
+    font-size: 1.3rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .card-text {
+    font-size: 0.95rem;
   }
 
   .forgive-button {
-    padding: 0.5rem;
+    font-size: 1rem;
+    padding: 0.875rem;
+  }
+
+  .reason-item {
+    padding: 0.875rem;
+    font-size: 0.95rem;
+  }
+
+  .photo-card {
+    max-width: 100%;
+  }
+
+  .photo-image {
+    max-height: 60vh;
+  }
+
+  .swiper-slide {
+    padding: 0.25rem;
   }
 }
 
-/* Otimizações de Performance */
+@media (min-height: 800px) {
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
   }
 }
 
-/* Suporte para Safari */
 @supports (-webkit-touch-callout: none) {
   .min-h-screen {
     min-height: -webkit-fill-available;
   }
+}
+
+.button-hint {
+  font-size: 0.8rem;
+  color: var(--primary-600);
+  margin-top: 0.5rem;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.cooldown-text {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--primary-500);
+  margin-top: 0.25rem;
+}
+
+.forgive-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 </style>
